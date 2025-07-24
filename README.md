@@ -1,16 +1,16 @@
 # 🩺 Ayurvedic Diagnostic Assistant
 
-An AI-powered Ayurvedic diagnostic assistant with interactive display and RAG (Retrieval-Augmented Generation) system.
+An AI-powered Ayurvedic diagnostic assistant with a modern Gradio web interface and RAG (Retrieval-Augmented Generation) system.
 
 ## 🌟 Features
 
-- **Interactive Diagnostic Interface**: Beautiful UI with real-time symptom analysis
-- **Gradio Web Interface**: Modern web-based UI accessible from any device
-- **Jupyter Notebook Interface**: Full interactive experience with widgets
+- **Modern Gradio Web Interface**: Beautiful, responsive web UI accessible from any device
 - **RAG System**: Knowledge base integration for accurate Ayurvedic recommendations
 - **Beautiful HTML Display**: Color-coded dosha identification and treatment recommendations
 - **Batch Analysis**: Process multiple symptom sets at once
-- **Comprehensive Documentation**: Detailed guides and examples
+- **Real-time Analysis**: Instant results with beautiful formatting
+- **Network Accessible**: Share with others on your network
+- **Mobile Friendly**: Works on phones, tablets, and desktops
 
 ## 🚀 Quick Start
 
@@ -39,14 +39,14 @@ An AI-powered Ayurvedic diagnostic assistant with interactive display and RAG (R
    # Edit .env and add your GOOGLE_API_KEY
    ```
 
-4. **Run the Gradio web interface** (Recommended):
+4. **Launch the Gradio web interface**:
    ```bash
    python gradio_demo.py
    ```
 
 ## 🎯 Usage
 
-### Gradio Web Interface (Recommended)
+### Gradio Web Interface
 ```bash
 # Main diagnostic interface
 python gradio_demo.py
@@ -60,11 +60,6 @@ python gradio_demo.py --batch
 python interactive_demo.py
 ```
 
-### Jupyter Notebook Interface
-```bash
-jupyter notebook notebooks/main_assistant.ipynb
-```
-
 ### Display Demo
 ```bash
 python demo_display.py
@@ -74,27 +69,6 @@ python demo_display.py
 ```bash
 python example_usage.py
 ```
-
-## 📊 Display Features
-
-### Beautiful HTML Output
-- **Color-coded dosha badges**: Vata (purple), Pitta (pink), Kapha (blue)
-- **Gradient backgrounds**: Modern design with smooth transitions
-- **Icons and emojis**: Visual indicators for different sections
-- **Responsive layout**: Works on different screen sizes
-
-### Organized Sections
-- **Diagnosis Header**: Main dosha identification
-- **Supporting Evidence**: Symptoms matching dosha
-- **Treatment Recommendations**: Organized by category
-- **Lifestyle Advice**: Daily routine suggestions
-- **Medical Disclaimer**: Important safety information
-
-### Interactive Elements
-- **Real-time analysis**: Instant results as you type
-- **Parameter adjustment**: Control RAG and temperature
-- **Progress indicators**: Visual feedback during analysis
-- **Error handling**: Clear error messages
 
 ## 🌐 Gradio Web Interface
 
@@ -119,6 +93,27 @@ python gradio_demo.py --batch
 # With public sharing (creates public URL)
 # Modify gradio_demo.py to set share=True
 ```
+
+## 📊 Display Features
+
+### Beautiful HTML Output
+- **Color-coded dosha badges**: Vata (purple), Pitta (pink), Kapha (blue)
+- **Gradient backgrounds**: Modern design with smooth transitions
+- **Icons and emojis**: Visual indicators for different sections
+- **Responsive layout**: Works on different screen sizes
+
+### Organized Sections
+- **Diagnosis Header**: Main dosha identification
+- **Supporting Evidence**: Symptoms matching dosha
+- **Treatment Recommendations**: Organized by category
+- **Lifestyle Advice**: Daily routine suggestions
+- **Medical Disclaimer**: Important safety information
+
+### Interactive Elements
+- **Real-time analysis**: Instant results as you type
+- **Parameter adjustment**: Control RAG and temperature
+- **Progress indicators**: Visual feedback during analysis
+- **Error handling**: Clear error messages
 
 ## 🧪 Example Symptoms
 
@@ -157,12 +152,9 @@ Ayurvedic_Diagnostic_Assistant/
 │   │   └── vector_store.py
 │   ├── ui/                    # User interface
 │   │   ├── display.py
-│   │   ├── widgets.py         # Jupyter widgets
 │   │   └── gradio_ui.py      # Gradio web interface
 │   └── utils/                 # Utilities
 │       └── helpers.py
-├── notebooks/                 # Jupyter notebooks
-│   └── main_assistant.ipynb
 ├── tests/                     # Test files
 ├── data/                      # Data files
 ├── requirements.txt           # Dependencies
@@ -195,11 +187,10 @@ python -m pytest tests/
 
 ## 📚 Documentation
 
-- **[Display Guide](DISPLAY_GUIDE.md)**: Comprehensive guide for using the display system
 - **[Example Usage](example_usage.py)**: Basic usage examples
 - **[Interactive Demo](interactive_demo.py)**: Interactive command-line interface
 - **[Gradio Demo](gradio_demo.py)**: Web-based interface
-- **[Jupyter Notebook](notebooks/main_assistant.ipynb)**: Full interactive experience
+- **[Display Demo](demo_display.py)**: Display functionality demo
 
 ## 🤝 Contributing
 
@@ -221,16 +212,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you encounter any issues:
 
-1. Check the [Display Guide](DISPLAY_GUIDE.md) for troubleshooting
-2. Ensure your Google API key is properly configured
-3. Verify all dependencies are installed
-4. Check the logs for detailed error messages
+1. Ensure your Google API key is properly configured
+2. Verify all dependencies are installed
+3. Check the logs for detailed error messages
+4. Make sure you have internet connection for API calls
 
 ## 🎉 Acknowledgments
 
 - Built with Google Gemini AI
 - Uses sentence-transformers for embeddings
-- Interactive widgets powered by ipywidgets
 - Web interface powered by Gradio
 - Beautiful display system with custom CSS
 
@@ -238,4 +228,4 @@ If you encounter any issues:
 
 **Happy Diagnosing! 🌿**
 
-For more information, check the [Display Guide](DISPLAY_GUIDE.md) or run the interactive demos. 
+For more information, run the interactive demos or check the example usage scripts. 

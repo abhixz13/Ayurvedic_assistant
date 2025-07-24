@@ -16,11 +16,6 @@ pandas>=2.0.0
 numpy>=1.24.0
 requests>=2.31.0
 
-# Jupyter and interactive components
-ipywidgets>=8.0.0
-IPython>=8.0.0
-jupyter>=1.0.0
-
 # Web UI framework
 gradio>=4.0.0
 

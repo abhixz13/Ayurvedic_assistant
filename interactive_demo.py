@@ -15,7 +15,7 @@ from src.ai.diagnostic_engine import AyurvedicDiagnosticEngine
 from src.ui.display import DiagnosisDisplay
 
 def main():
-    """Interactive demonstration function."""
+    """Main interactive demo function."""
     print("🩺 Ayurvedic Diagnostic Assistant - Interactive Demo")
     print("=" * 60)
     
@@ -43,124 +43,93 @@ def main():
         print("Please check your Google API key in .env file")
         return
     
-    # Create display utility
+    # Initialize display utility
     display_util = DiagnosisDisplay()
     
     print("\n🎯 Interactive Demo Started!")
-    print("Enter your symptoms below for Ayurvedic analysis.")
-    print("Type 'quit' to exit, 'help' for examples, or 'demo' for sample symptoms.")
-    print("-" * 60)
+    print("💡 Type 'quit' to exit, 'help' for commands, 'demo' for examples")
     
     while True:
         try:
             # Get user input
             symptoms = input("\n📝 Enter your symptoms: ").strip()
             
-            if symptoms.lower() == 'quit':
-                print("👋 Goodbye!")
+            # Handle special commands
+            if symptoms.lower() in ['quit', 'exit', 'q']:
+                print("👋 Goodbye! Thank you for using the Ayurvedic Diagnostic Assistant.")
                 break
-            elif symptoms.lower() == 'help':
-                print("\n💡 Example symptoms you can try:")
-                print("1. 'I have joint pain, dry skin, and anxiety'")
-                print("2. 'I get heartburn after spicy foods and feel hot often'")
-                print("3. 'I feel tired, have gained weight, and sleep too much'")
-                print("4. 'I have constipation, cracking joints, and trouble sleeping'")
+            elif symptoms.lower() in ['help', 'h']:
+                print("\n📚 Available Commands:")
+                print("  - 'quit' or 'exit': Exit the demo")
+                print("  - 'help': Show this help message")
+                print("  - 'demo': Show example symptoms")
+                print("  - Enter symptoms: Get Ayurvedic analysis")
                 continue
-            elif symptoms.lower() == 'demo':
-                print("\n🧪 Running demo with sample symptoms...")
-                symptoms = "I have joint pain that worsens in cold weather, cracking sounds in my knees, constipation, and anxiety. I have trouble sleeping and my skin is very dry."
-                print(f"Demo symptoms: {symptoms}")
-            
-            if not symptoms:
+            elif symptoms.lower() in ['demo', 'example']:
+                print("\n🧪 Example Symptoms:")
+                print("1. Vata: 'I have joint pain, dry skin, and anxiety'")
+                print("2. Pitta: 'I get heartburn and skin rashes'")
+                print("3. Kapha: 'I feel tired and have gained weight'")
+                continue
+            elif not symptoms:
                 print("❌ Please enter symptoms for analysis.")
                 continue
             
-            print(f"\n🔄 Analyzing symptoms...")
-            
             # Analyze symptoms
+            print("🔍 Analyzing symptoms...")
             result = engine.analyze_symptoms(symptoms)
             
             if "error" not in result:
-                print("✅ Analysis completed successfully!")
-                
-                # Extract key information
+                # Show console summary
                 dominant_dosha = result.get("dominant_dosha", "Unknown")
-                diagnosis_text = result.get("diagnosis", "Not specified")
+                confidence = result.get("confidence", 0)
+                diagnosis = result.get("diagnosis", "Not specified")
                 
-                print(f"\n📊 Analysis Results:")
-                print(f"   🎯 Dominant Dosha: {dominant_dosha}")
-                print(f"   📋 Diagnosis: {diagnosis_text}")
+                print(f"\n✅ Analysis Complete!")
+                print(f"📊 Dominant Dosha: {dominant_dosha}")
+                print(f"🎯 Confidence: {confidence:.1%}")
+                print(f"📝 Diagnosis: {diagnosis[:200]}...")
                 
-                # Show recommendations summary
-                recommendations = result.get("recommended_treatments", {})
-                if recommendations:
-                    print(f"   🌱 Treatment Categories Available:")
-                    for category, items in recommendations.items():
-                        if items and category not in ['important_notes', 'important_note']:
-                            if isinstance(items, list):
-                                print(f"     - {category}: {len(items)} recommendations")
-                            else:
-                                print(f"     - {category}: {str(items)[:50]}...")
-                
-                # Ask user if they want to see detailed display
+                # Ask about HTML display
                 display_choice = input("\n🎨 Would you like to see the detailed HTML display? (y/n): ").strip().lower()
-                
                 if display_choice in ['y', 'yes']:
-                    print("\n📋 Generating detailed display...")
-                    
-                    # Generate HTML display
                     html_output = display_util.display_diagnosis(result)
-                    print("✅ Detailed HTML display generated successfully!")
-                    print("💡 In a Jupyter notebook, this would show beautiful formatted output with:")
-                    print("   - Color-coded dosha badges")
-                    print("   - Organized treatment sections")
-                    print("   - Supporting evidence")
-                    print("   - Lifestyle recommendations")
-                    print("   - Medical disclaimers")
+                    print("📄 HTML output generated successfully!")
                     
-                    # Show simple version
+                    # Ask about simple summary
                     simple_choice = input("\n📋 Would you like to see the simple summary? (y/n): ").strip().lower()
                     if simple_choice in ['y', 'yes']:
                         simple_output = display_util.display_simple(result)
-                        print("✅ Simple summary display generated!")
+                        print("📄 Simple summary generated successfully!")
                 
                 # Show supporting evidence
                 evidence = result.get("supporting_evidence", {})
                 if evidence:
-                    print(f"\n📋 Supporting Evidence:")
-                    for key, value in evidence.items():
-                        if value:
-                            if isinstance(value, list):
-                                print(f"   - {key}: {len(value)} indicators")
+                    print(f"\n🔍 Supporting Evidence:")
+                    for dosha, symptoms_list in evidence.items():
+                        if symptoms_list:
+                            print(f"  {dosha}: {', '.join(symptoms_list[:3])}...")
+                
+                # Show treatment recommendations
+                treatments = result.get("recommended_treatments", {})
+                if treatments:
+                    print(f"\n💊 Treatment Recommendations:")
+                    for category, items in list(treatments.items())[:3]:
+                        if items and category not in ['important_notes', 'important_note']:
+                            if isinstance(items, list):
+                                print(f"  {category}: {len(items)} recommendations")
                             else:
-                                print(f"   - {key}: {str(value)[:50]}...")
+                                print(f"  {category}: {str(items)[:50]}...")
                 
             else:
                 print(f"❌ Analysis failed: {result['error']}")
-                print("💡 Try rephrasing your symptoms or check your internet connection.")
-            
+                
         except KeyboardInterrupt:
-            print("\n👋 Goodbye!")
+            print("\n👋 Goodbye! Thank you for using the Ayurvedic Diagnostic Assistant.")
             break
         except Exception as e:
             print(f"❌ Error: {e}")
-            print("💡 Please try again or type 'help' for examples.")
-    
-    print(f"\n{'='*60}")
-    print("🎉 Interactive Demo Completed!")
-    print("\n📋 To use the full interactive interface:")
-    print("1. Run: jupyter notebook notebooks/main_assistant.ipynb")
-    print("2. Use the interactive widgets for a better experience")
-    print("\n💡 Key Features Available:")
-    print("- Real-time symptom analysis")
-    print("- Beautiful HTML display formatting")
-    print("- Dosha identification and recommendations")
-    print("- Treatment and lifestyle advice")
-    print("- Supporting evidence and indicators")
-    
-    print("\n⚠️  Important Disclaimer:")
-    print("This tool is for educational purposes only.")
-    print("Always consult qualified Ayurvedic practitioners for proper diagnosis and treatment.")
+            print("💡 Try again or type 'help' for assistance.")
 
 if __name__ == "__main__":
     main() 
