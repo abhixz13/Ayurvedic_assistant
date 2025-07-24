@@ -35,6 +35,99 @@ class AyurvedicDiagnosticEngine:
         
         logger.info("Initialized Ayurvedic Diagnostic Engine")
     
+    def chat(self, user_message: str, 
+             use_rag: bool = True,
+             temperature: float = None,
+             conversation_history: List[Dict] = None) -> str:
+        """
+        Handle conversational chat with the user.
+        
+        Args:
+            user_message: User's message
+            use_rag: Whether to use RAG for context retrieval
+            temperature: Model temperature for generation
+            conversation_history: Previous conversation turns
+            
+        Returns:
+            Assistant's conversational response
+        """
+        try:
+            logger.info(f"Processing chat message: {user_message[:100]}...")
+            
+            # Step 1: Retrieve relevant context (RAG) for health-related queries
+            context = ""
+            if use_rag and self.retriever.is_initialized():
+                # Only retrieve context for health-related queries
+                if self._is_health_related(user_message):
+                    context = self.retriever.get_relevant_context(user_message)
+                    logger.info(f"Retrieved context with {len(context)} characters")
+                else:
+                    logger.info("Query not health-related, skipping RAG retrieval")
+            else:
+                logger.info("RAG not available or not initialized, proceeding without context")
+            
+            # Step 2: Create conversational prompt
+            prompt = self.prompt_manager.create_conversational_prompt(
+                user_message=user_message,
+                context=context,
+                conversation_history=conversation_history
+            )
+            
+            # Step 3: Generate response
+            response = self.gemini_client.generate_text_response(
+                prompt=prompt,
+                temperature=temperature or settings.temperature
+            )
+            
+            # Step 4: Validate response
+            if not self.prompt_manager.validate_response(response):
+                logger.warning("Generated response was incomplete, generating fallback")
+                response = self._generate_fallback_response(user_message)
+            
+            logger.info("Chat response generated successfully")
+            return response
+            
+        except Exception as e:
+            logger.error(f"Error in chat processing: {e}")
+            return f"I apologize, but I'm having trouble processing your request right now. Could you please try again? If the problem persists, please check your internet connection."
+    
+    def _is_health_related(self, message: str) -> bool:
+        """
+        Determine if a message is health-related.
+        
+        Args:
+            message: User's message
+            
+        Returns:
+            True if health-related, False otherwise
+        """
+        health_keywords = [
+            'pain', 'symptom', 'health', 'sick', 'ill', 'disease', 'condition',
+            'dosha', 'vata', 'pitta', 'kapha', 'ayurveda', 'treatment',
+            'medicine', 'herb', 'diet', 'lifestyle', 'wellness', 'healing',
+            'joint', 'headache', 'stomach', 'digestion', 'sleep', 'energy',
+            'stress', 'anxiety', 'depression', 'skin', 'hair', 'weight',
+            'blood', 'heart', 'lung', 'liver', 'kidney', 'bone', 'muscle'
+        ]
+        
+        message_lower = message.lower()
+        return any(keyword in message_lower for keyword in health_keywords)
+    
+    def _generate_fallback_response(self, user_message: str) -> str:
+        """
+        Generate a fallback response when the main response is incomplete.
+        
+        Args:
+            user_message: User's message
+            
+        Returns:
+            Fallback response
+        """
+        if self._is_health_related(user_message):
+            return "I understand you're asking about health concerns. Let me help you with that. Could you please provide more specific details about your symptoms or what you'd like to know about Ayurvedic health?"
+        else:
+            return "I'm sorry, that's outside my scope. I'm here to help with Ayurvedic and health-related questions. How can I assist you with your wellness journey?"
+    
     def analyze_symptoms(self, symptoms: str, 
                         use_rag: bool = True,
                         temperature: float = None) -> Dict[str, Any]:

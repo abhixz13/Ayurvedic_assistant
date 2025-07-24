@@ -90,6 +90,32 @@ class GeminiClient:
                 "model": self.model_name
             }
     
+    def generate_text_response(self, prompt: str, 
+                             temperature: float = None,
+                             max_tokens: int = None) -> str:
+        """
+        Generate text response from the model.
+        
+        Args:
+            prompt: Input prompt
+            temperature: Sampling temperature (0.0 to 1.0)
+            max_tokens: Maximum number of tokens to generate
+            
+        Returns:
+            Generated text response
+        """
+        try:
+            result = self.generate_content(prompt, temperature, max_tokens)
+            
+            if "error" in result:
+                return f"Error generating response: {result['error']}"
+            
+            return result["content"]
+            
+        except Exception as e:
+            logger.error(f"Error generating text response: {e}")
+            return f"Error generating response: {str(e)}"
+    
     def generate_json_response(self, prompt: str, 
                              temperature: float = None,
                              max_tokens: int = None) -> Dict[str, Any]:

@@ -1,5 +1,5 @@
 """
-Prompt management for Ayurvedic diagnostic assistant.
+Prompt management for conversational Ayurvedic chatbot.
 """
 
 import logging
@@ -13,174 +13,275 @@ logger = logging.getLogger(__name__)
 
 
 class PromptManager:
-    """Manage prompts and few-shot examples for Ayurvedic diagnosis."""
+    """Manage prompts for conversational Ayurvedic chatbot."""
     
     def __init__(self):
-        self.few_shot_examples = self._get_few_shot_examples()
-        self.base_prompt_template = self._get_base_prompt_template()
+        self.system_prompt = self._get_system_prompt()
+        self.conversation_examples = self._get_conversation_examples()
     
-    def _get_few_shot_examples(self) -> str:
-        """Get few-shot examples for structured output."""
-        return """
-Example 1:
-Patient Symptoms: "I've been experiencing joint pain that worsens in cold weather, cracking sounds in my knees, constipation, and anxiety. I have trouble sleeping and my skin is very dry."
-Ayurvedic Analysis:
-{
-"dominant_dosha": "Vata",
-"imbalances": ["Vata excess in joints (Sandhi Vata)", "Vata affecting colon (Kostha Vata)", "Vata affecting nervous system (Majja Dhatu)"],
-"diagnosis": "Sandhigata Vata (Osteoarthritis with Vata predominance) with associated Anidra (Insomnia) and Kostha Baddhata (Constipation)",
-"supporting_evidence": {
-    "symptoms_matching_vata": ["joint pain worse in cold", "cracking sounds (Vata in joints)", "constipation", "anxiety", "insomnia", "dry skin"],
-    "pulse_indication": "Likely irregular, thready, feeble (Vata pulse)",
-    "tongue_indication": "Likely dry, rough, possibly cracked, maybe a brownish coating"
-},
-"recommended_treatments": {
-    "dietary": ["Warm, cooked, unctuous foods", "Favor sweet, sour, and salty tastes", "Include ghee and healthy oils", "Avoid cold, dry, light foods", "Warm water/herbal teas"],
-    "herbs": ["Ashwagandha (Withania somnifera) - for strength and stress", "Guggulu (Commiphora wightii) - specific for joints", "Shallaki (Boswellia serrata) - for joint inflammation", "Haritaki (Terminalia chebula) - for constipation"],
-    "ayurvedic_medicines": ["Yogaraj Guggulu or Mahayogaraj Guggulu - classical formulation for joints", "Mahanarayan Oil - for external massage on joints", "Ashwagandharishta - for nerve strength and stress", "Castor oil (Eranda Taila) - gentle purgative for Vata constipation (use cautiously)"],
-    "therapies": ["Abhyanga (regular warm oil massage)", "Swedana (steam therapy, especially Nadi Sweda for joints)", "Basti (medicated enema, particularly Anuvasana or Matra Basti with appropriate oils)"],
-    "lifestyle": ["Maintain regular daily routine (Dinacharya)", "Keep warm, avoid cold drafts", "Gentle, grounding yoga and stretching", "Pranayama (e.g., Nadi Shodhana)", "Meditation for anxiety"]
-}
-}
+    def _get_system_prompt(self) -> str:
+        """Get the main system prompt for the conversational chatbot."""
+        return """You are Dr. Priya, a warm and knowledgeable Ayurvedic physician with over 20 years of experience. You speak in a friendly, conversational manner like a caring doctor talking to a patient.
 
-Example 2:
-Patient Symptoms: "I frequently get heartburn and acid reflux, especially after eating spicy foods. I have a reddish complexion, feel hot often, and get irritated easily. I also have some skin rashes that worsen when I'm stressed."
-Ayurvedic Analysis:
-{
-"dominant_dosha": "Pitta",
-"imbalances": ["Pitta excess in digestive tract (Annavaha Srotas)", "Pitta affecting skin (Rakta Dhatu, Bhrajaka Pitta)", "Pitta affecting mind (Sadhaka Pitta)"],
-"diagnosis": "Amlapitta (Hyperacidity/GERD) with associated Raktaja Kustha (Pitta-type skin issues)",
-"supporting_evidence": {
-    "symptoms_matching_pitta": ["heartburn", "acid reflux (sour/bitter taste)", "reddish complexion", "feeling hot", "irritability/anger", "skin rashes worsened by stress/heat"],
-    "pulse_indication": "Likely moderate strength, sharp, jumping (Pitta pulse)",
-    "tongue_indication": "Likely reddish tongue body, possibly with a yellowish coating"
-},
-"recommended_treatments": {
-    "dietary": ["Cooling foods and drinks", "Favor sweet, bitter, and astringent tastes", "Avoid spicy, sour, salty, fermented foods", "Avoid alcohol, caffeine, excessive fried food", "Regular meal times, avoid skipping meals"],
-    "herbs": ["Amalaki (Emblica officinalis) - cooling, Vit C rich, balances Pitta", "Guduchi (Tinospora cordifolia) - immunomodulator, Pitta-shamaka", "Shatavari (Asparagus racemosus) - cooling, soothing for GI tract", "Yashtimadhu (Glycyrrhiza glabra) - demulcent for GI lining (use cautiously if BP issues)", "Neem (Azadirachta indica) - bitter, for skin issues"],
-    "ayurvedic_medicines": ["Avipattikar Churna - classical formula for hyperacidity", "Kamadudha Rasa (with Mukta) - cooling antacid formulation", "Chandanasava - cooling formulation, helpful for burning sensations", "Sutshekhar Rasa - often used for Pitta conditions including GI issues"],
-    "therapies": ["Virechana (therapeutic purgation) - primary Pitta detoxification (under guidance)", "Cooling oil application (e.g., Chandanadi Taila, Coconut oil)", "Shirodhara with cooling liquids (e.g., milk, buttermilk)"],
-    "lifestyle": ["Avoid excessive heat and sun exposure", "Moderate exercise, avoid overheating", "Practice stress-reducing techniques (meditation, calming pranayama like Sheetali)", "Spend time in nature, near water", "Moonlight walks"]
-}
-}
-"""
-    
-    def _get_base_prompt_template(self) -> str:
-        """Get the base prompt template."""
-        return """You are an expert Ayurvedic physician with deep knowledge of traditional Ayurvedic principles, including the Tridosha theory (Vata, Pitta, Kapha), the seven Dhatus (tissues), and the various Srotas (channels).
+PERSONALITY:
+- Warm, empathetic, and approachable
+- Speak naturally like a human, not a robot
+- Use conversational language with appropriate greetings and pleasantries
+- Show genuine care and concern for the user's well-being
+- Be encouraging and supportive
 
-Your task is to analyze patient symptoms and provide a comprehensive Ayurvedic diagnosis with treatment recommendations.
+SCOPE OF EXPERTISE:
+You can discuss:
+- Ayurvedic principles and concepts
+- Health and wellness topics
+- Symptoms and their Ayurvedic interpretations
+- Dosha analysis (Vata, Pitta, Kapha)
+- Treatment recommendations
+- Lifestyle and dietary advice
+- General health questions
+
+OUT OF SCOPE:
+If asked about topics outside Ayurveda or health (politics, sports, technology, etc.), politely say: "I'm sorry, that's outside my scope. I'm here to help with Ayurvedic and health-related questions. How can I assist you with your wellness journey?"
+
+RESPONSE FORMAT:
+For health-related questions, provide comprehensive responses that include:
+1. **Dosha Analysis**: Identify dominant dosha and imbalances
+2. **Diagnosis**: Ayurvedic diagnosis with explanation
+3. **Supporting Evidence**: Why this diagnosis makes sense
+4. **Treatment Recommendations**: 
+   - Dietary advice
+   - Herbal recommendations
+   - Ayurvedic medicines
+   - Therapies
+   - Lifestyle changes
+5. **Medical Disclaimer**: Always include appropriate medical disclaimers
+
+CONVERSATION STYLE:
+- Respond naturally to greetings: "Hello! I'm doing well, thank you for asking. How are you today?"
+- Ask follow-up questions to gather more information
+- Provide complete, coherent responses
+- Use warm, encouraging language
+- Include relevant Ayurvedic wisdom in your responses
 
 {context}
 
-Please analyze the following patient symptoms and provide your assessment in the exact JSON format shown in the examples below:
+Remember: Always respond as a caring human doctor, not as a clinical system. Make your responses conversational and complete."""
 
-Patient Symptoms: "{symptoms}"
+    def _get_conversation_examples(self) -> str:
+        """Get examples of conversational interactions."""
+        return """
+CONVERSATION EXAMPLES:
 
-Provide your analysis in the following JSON structure:
-{{
-    "dominant_dosha": "Vata/Pitta/Kapha",
-    "imbalances": ["specific imbalances identified"],
-    "diagnosis": "Ayurvedic diagnosis name",
-    "supporting_evidence": {{
-        "symptoms_matching_dosha": ["list of symptoms that match the dosha"],
-        "pulse_indication": "likely pulse characteristics",
-        "tongue_indication": "likely tongue characteristics"
-    }},
-    "recommended_treatments": {{
-        "dietary": ["dietary recommendations"],
-        "herbs": ["herbal recommendations with scientific names"],
-        "ayurvedic_medicines": ["classical Ayurvedic formulations"],
-        "therapies": ["therapeutic recommendations"],
-        "lifestyle": ["lifestyle recommendations"]
-    }}
-}}
+User: "Hi, how are you?"
+Assistant: "Hello! I'm doing well, thank you for asking. How are you today? I'm here to help with any Ayurvedic or health-related questions you might have."
 
-Important guidelines:
-1. Base your analysis on traditional Ayurvedic principles
-2. Use the provided context from Ayurvedic texts when relevant
-3. Be specific about dosha imbalances and their locations
-4. Provide evidence-based recommendations
-5. Include both Sanskrit and English terms where appropriate
-6. Ensure all recommendations are safe and practical
-7. Format the response as valid JSON only, without any additional text or markdown formatting
+User: "What's the weather like?"
+Assistant: "I'm sorry, that's outside my scope. I'm here to help with Ayurvedic and health-related questions. How can I assist you with your wellness journey?"
 
-Examples of the expected format:
-{few_shot_examples}
+User: "I have joint pain and anxiety"
+Assistant: "I'm sorry to hear you're experiencing joint pain and anxiety. These symptoms suggest a Vata imbalance in your system. Let me help you understand what's happening and how we can address it.
+
+Based on Ayurvedic principles, your symptoms indicate:
+- **Dominant Dosha**: Vata (air and ether elements)
+- **Imbalances**: Vata affecting joints (Sandhi Vata) and nervous system (Majja Dhatu)
+- **Diagnosis**: Likely Vata imbalance with joint and nervous system involvement
+
+**Supporting Evidence**: Joint pain, especially when worse in cold weather, and anxiety are classic Vata symptoms. Vata governs movement and the nervous system.
+
+**Treatment Recommendations**:
+- **Dietary**: Warm, cooked foods with sweet, sour, and salty tastes. Include ghee and healthy oils. Avoid cold, dry foods.
+- **Herbs**: Ashwagandha for stress and strength, Guggulu for joints, Haritaki for digestion
+- **Lifestyle**: Regular daily routine, warm oil massage (Abhyanga), gentle yoga, meditation
+- **Therapies**: Warm oil massage, steam therapy, grounding practices
+
+**Important**: This is for educational purposes. Please consult with a qualified Ayurvedic practitioner for personalized treatment.
+
+How long have you been experiencing these symptoms? This will help me provide more specific guidance."
+
+User: "Tell me about Vata dosha"
+Assistant: "Great question! Vata dosha is one of the three fundamental energies in Ayurveda, composed of air (Vayu) and ether (Akasha) elements.
+
+**Characteristics of Vata**:
+- **Qualities**: Light, cold, dry, rough, mobile, subtle, clear
+- **Functions**: Controls movement, breathing, circulation, elimination, nervous system
+- **Location**: Colon, thighs, bones, ears, skin
+
+**When Vata is Balanced**:
+- Creative and enthusiastic
+- Quick thinking and learning
+- Good communication skills
+- Natural flexibility
+
+**When Vata is Imbalanced**:
+- Anxiety and worry
+- Insomnia or disturbed sleep
+- Dry skin and hair
+- Constipation or irregular digestion
+- Joint pain and stiffness
+- Restlessness and overthinking
+
+**Balancing Vata**:
+- **Diet**: Warm, cooked, unctuous foods. Sweet, sour, and salty tastes
+- **Lifestyle**: Regular routine, adequate sleep, warm oil massage
+- **Herbs**: Ashwagandha, Shatavari, Bala, Haritaki
+- **Practices**: Gentle yoga, meditation, grounding exercises
+
+Would you like to know more about specific Vata-balancing practices or how to identify if you have a Vata imbalance?"
 """
-    
-    def create_diagnostic_prompt(self, symptoms: str, context: str = "") -> str:
+
+    def create_conversational_prompt(self, user_message: str, context: str = "", conversation_history: List[Dict] = None) -> str:
         """
-        Create a diagnostic prompt with symptoms and context.
+        Create a conversational prompt for the chatbot.
         
         Args:
-            symptoms: Patient symptoms
-            context: Retrieved context from knowledge base
+            user_message: The user's current message
+            context: RAG context if available
+            conversation_history: Previous conversation turns
             
         Returns:
-            Formatted prompt string
+            Formatted prompt for the chatbot
         """
-        # Format context if provided
-        if context:
-            formatted_context = f"Relevant Ayurvedic knowledge:\n{context}\n\n"
-        else:
-            formatted_context = ""
+        # Build conversation history
+        history_text = ""
+        if conversation_history:
+            history_text = "\n\nCONVERSATION HISTORY:\n"
+            for turn in conversation_history[-5:]:  # Last 5 turns
+                history_text += f"User: {turn.get('user', '')}\n"
+                history_text += f"Assistant: {turn.get('assistant', '')}\n"
         
-        # Create the prompt
-        prompt = self.base_prompt_template.format(
-            context=formatted_context,
-            symptoms=symptoms,
-            few_shot_examples=self.few_shot_examples
-        )
+        # Determine if this is a scope check
+        scope_keywords = [
+            'weather', 'politics', 'sports', 'technology', 'movies', 'music', 
+            'travel', 'cooking', 'fashion', 'business', 'finance', 'education',
+            'entertainment', 'news', 'current events', 'celebrity', 'gossip'
+        ]
         
+        is_out_of_scope = any(keyword in user_message.lower() for keyword in scope_keywords)
+        
+        if is_out_of_scope:
+            return f"""{self.system_prompt}
+
+{history_text}
+
+User: {user_message}
+
+Assistant: I'm sorry, that's outside my scope. I'm here to help with Ayurvedic and health-related questions. How can I assist you with your wellness journey?"""
+
+        # Check if it's a greeting
+        greeting_keywords = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening', 'how are you']
+        is_greeting = any(keyword in user_message.lower() for keyword in greeting_keywords)
+        
+        if is_greeting:
+            return f"""{self.system_prompt}
+
+{history_text}
+
+User: {user_message}
+
+Assistant: Hello! I'm doing well, thank you for asking. How are you today? I'm here to help with any Ayurvedic or health-related questions you might have."""
+
+        # Regular health-related conversation
+        prompt = f"""{self.system_prompt}
+
+{self.conversation_examples}
+
+{history_text}
+
+{context}
+
+User: {user_message}
+
+Assistant:"""
+
         return prompt
-    
-    def create_simple_prompt(self, symptoms: str) -> str:
+
+    def create_ayurvedic_analysis_prompt(self, symptoms: str, context: str = "") -> str:
         """
-        Create a simple diagnostic prompt without RAG context.
+        Create a detailed Ayurvedic analysis prompt for health-related queries.
         
         Args:
-            symptoms: Patient symptoms
+            symptoms: User's health concerns or symptoms
+            context: RAG context if available
             
         Returns:
-            Formatted prompt string
+            Formatted prompt for detailed Ayurvedic analysis
         """
-        return f"""You are an expert Ayurvedic physician. Analyze the following symptoms and provide a diagnosis in JSON format:
+        return f"""{self.system_prompt}
 
-Patient Symptoms: "{symptoms}"
+{context}
 
-Provide your analysis in JSON format following the structure from the examples above."""
-    
+User: {symptoms}
+
+Assistant: Let me help you understand this from an Ayurvedic perspective. Based on your symptoms, here's what I can tell you:
+
+**Dosha Analysis**: 
+[Provide dosha identification and explanation]
+
+**Diagnosis**: 
+[Give Ayurvedic diagnosis with explanation]
+
+**Supporting Evidence**: 
+[Explain why this diagnosis makes sense based on symptoms]
+
+**Treatment Recommendations**:
+- **Dietary**: [Specific dietary advice]
+- **Herbs**: [Herbal recommendations with scientific names]
+- **Ayurvedic Medicines**: [Classical formulations if applicable]
+- **Therapies**: [Therapeutic recommendations]
+- **Lifestyle**: [Lifestyle and daily routine advice]
+
+**Important**: This information is for educational purposes. Please consult with a qualified Ayurvedic practitioner for personalized treatment and diagnosis.
+
+Would you like me to elaborate on any of these recommendations or explain how to implement them in your daily routine?"""
+
+    def create_simple_response_prompt(self, user_message: str) -> str:
+        """
+        Create a simple response prompt for non-health queries.
+        
+        Args:
+            user_message: User's message
+            
+        Returns:
+            Formatted prompt for simple response
+        """
+        return f"""{self.system_prompt}
+
+User: {user_message}
+
+Assistant:"""
+
+    def validate_response(self, response: str) -> bool:
+        """
+        Validate if the response is complete and coherent.
+        
+        Args:
+            response: The assistant's response
+            
+        Returns:
+            True if response is valid, False otherwise
+        """
+        if not response or len(response.strip()) < 10:
+            return False
+        
+        # Check for incomplete responses
+        incomplete_indicators = [
+            "Unknown Predominance",
+            "Insufficient information",
+            "More detailed information is required",
+            "Please inquire about specific symptoms"
+        ]
+        
+        for indicator in incomplete_indicators:
+            if indicator.lower() in response.lower():
+                return False
+        
+        return True
+
     def get_prompt_variations(self) -> Dict[str, str]:
         """Get different prompt variations for testing."""
         return {
-            "detailed": self.base_prompt_template,
-            "simple": "Analyze these symptoms: {symptoms}",
-            "clinical": "As a clinical Ayurvedic practitioner, diagnose: {symptoms}",
-            "research": "Based on Ayurvedic research, analyze: {symptoms}"
-        }
-    
-    def validate_prompt(self, prompt: str) -> bool:
-        """
-        Validate that a prompt contains required elements.
-        
-        Args:
-            prompt: Prompt to validate
-            
-        Returns:
-            True if valid, False otherwise
-        """
-        required_elements = [
-            "Ayurvedic",
-            "symptoms",
-            "JSON",
-            "dosha"
-        ]
-        
-        prompt_lower = prompt.lower()
-        for element in required_elements:
-            if element not in prompt_lower:
-                logger.warning(f"Prompt missing required element: {element}")
-                return False
-        
-        return True 
+            "conversational": self.system_prompt,
+            "greeting": "Hello! How can I help you with Ayurvedic and health-related questions?",
+            "scope_rejection": "I'm sorry, that's outside my scope. I'm here to help with Ayurvedic and health-related questions.",
+            "ayurvedic_analysis": self.create_ayurvedic_analysis_prompt("sample symptoms")
+        } 

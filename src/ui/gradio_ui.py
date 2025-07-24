@@ -1,237 +1,246 @@
 """
-Gradio UI for the Ayurvedic Diagnostic Assistant.
+Gradio UI components for the Ayurvedic Diagnostic Assistant.
 """
 
-import logging
 import gradio as gr
-from typing import Dict, Any, Callable, Optional, Tuple
+import logging
+from typing import Callable, Dict, Any, List, Tuple
 from src.ui.display import DiagnosisDisplay
 
 logger = logging.getLogger(__name__)
 
 
-class GradioDiagnosticUI:
-    """Gradio UI for Ayurvedic diagnosis."""
+class GradioChatUI:
+    """Conversational chat interface for the Ayurvedic Diagnostic Assistant."""
     
-    def __init__(self, diagnostic_callback: Callable[[str, bool, float], Dict[str, Any]]):
+    def __init__(self, chat_callback: Callable[[str, bool, float], str]):
         """
-        Initialize the Gradio UI.
+        Initialize the chat UI.
         
         Args:
-            diagnostic_callback: Function that takes symptoms, use_rag, temperature and returns diagnosis
+            chat_callback: Function to handle chat messages
         """
-        self.diagnostic_callback = diagnostic_callback
-        self.display = DiagnosisDisplay()
+        self.chat_callback = chat_callback
+        self.conversation_history = []
         self.interface = None
-    
+        
     def create_interface(self) -> gr.Interface:
-        """Create the Gradio interface."""
+        """Create the Gradio chat interface."""
         
         # Custom CSS for better styling
         css = """
-        .gradio-container {
-            max-width: 1200px !important;
-            margin: 0 auto !important;
+        .chat-container {
+            max-height: 600px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            background: #f9f9f9;
         }
-        .main-header {
-            text-align: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .user-message {
+            background: #007bff;
             color: white;
+            padding: 10px 15px;
+            border-radius: 15px;
+            margin: 10px 0;
+            max-width: 80%;
+            margin-left: auto;
+            text-align: right;
+        }
+        .assistant-message {
+            background: #e9ecef;
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 15px;
+            margin: 10px 0;
+            max-width: 80%;
+            margin-right: auto;
+        }
+        .settings-panel {
+            background: #f8f9fa;
             padding: 20px;
             border-radius: 10px;
-            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
         }
-        .dosha-badge {
-            display: inline-block;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 1.1em;
-            margin: 10px 0;
-        }
-        .dosha-vata {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .example-button {
+            margin: 5px;
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: 1px solid #007bff;
+            background: #007bff;
             color: white;
+            cursor: pointer;
         }
-        .dosha-pitta {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-        }
-        .dosha-kapha {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
+        .example-button:hover {
+            background: #0056b3;
         }
         """
         
-        # Define the interface function
-        def analyze_symptoms(symptoms: str, use_rag: bool, temperature: float) -> Tuple[str, str]:
+        def chat_with_assistant(message: str, use_rag: bool, temperature: float) -> Tuple[str, str]:
             """
-            Analyze symptoms and return formatted results.
+            Handle chat interaction with the assistant.
             
             Args:
-                symptoms: User input symptoms
-                use_rag: Whether to use RAG system
-                temperature: Model temperature for creativity
+                message: User's message
+                use_rag: Whether to use RAG
+                temperature: Model temperature
                 
             Returns:
-                Tuple of (status_message, html_output)
+                Tuple of (chat_history, status_message)
             """
+            if not message.strip():
+                return "", "Please enter a message."
+            
             try:
-                if not symptoms.strip():
-                    return "❌ Please enter symptoms for analysis.", ""
+                # Add user message to history
+                self.conversation_history.append({"user": message, "assistant": ""})
                 
-                # Call the diagnostic function
-                result = self.diagnostic_callback(symptoms, use_rag, temperature)
+                # Get assistant response
+                response = self.chat_callback(message, use_rag, temperature)
                 
-                if "error" in result:
-                    error_html = f"""
-                    <div style="background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; padding: 15px; margin: 10px 0; color: #721c24;">
-                        <strong>⚠️ Error:</strong> {result["error"]}
-                    </div>
-                    """
-                    return f"❌ Analysis failed: {result['error']}", error_html
+                # Update conversation history
+                self.conversation_history[-1]["assistant"] = response
                 
-                # Generate HTML output
-                html_output = self.display.display_diagnosis(result)
+                # Format chat history for display
+                chat_display = ""
+                for turn in self.conversation_history:
+                    chat_display += f'<div class="user-message">{turn["user"]}</div>'
+                    chat_display += f'<div class="assistant-message">{turn["assistant"]}</div>'
                 
-                # Extract status message
-                dominant_dosha = result.get("dominant_dosha", "Unknown")
-                status_msg = f"✅ Analysis complete - {dominant_dosha} predominance detected"
-                
-                return status_msg, html_output.data
+                status = f"✅ Response generated successfully"
+                return chat_display, status
                 
             except Exception as e:
-                logger.error(f"Error in diagnostic analysis: {e}")
-                error_html = f"""
-                <div style="background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; padding: 15px; margin: 10px 0; color: #721c24;">
-                    <strong>⚠️ Error:</strong> {str(e)}
-                </div>
-                """
-                return f"❌ Analysis failed: {str(e)}", error_html
+                logger.error(f"Error in chat: {e}")
+                error_msg = f"❌ Error: {str(e)}"
+                return "", error_msg
         
-        # Create the interface
-        with gr.Blocks(css=css, title="🩺 Ayurvedic Diagnostic Assistant") as interface:
+        def clear_chat() -> Tuple[str, str]:
+            """Clear the chat history."""
+            self.conversation_history = []
+            return "", "🗑️ Chat history cleared"
+        
+        def add_example_message(example: str) -> Tuple[str, str, str]:
+            """Add an example message to the chat."""
+            return example, "", "📝 Example message added"
+        
+        # Create the interface layout
+        with gr.Blocks(css=css, title="Ayurvedic Chat Assistant") as interface:
             
-            # Header
-            gr.HTML("""
-            <div class="main-header">
-                <h1>🩺 Ayurvedic Diagnostic Assistant</h1>
-                <p>Enter your symptoms below for an Ayurvedic analysis</p>
-            </div>
+            gr.Markdown("""
+            # 🩺 Ayurvedic Chat Assistant
+            
+            Welcome! I'm Dr. Priya, your Ayurvedic health assistant. I can help you with:
+            - Ayurvedic principles and dosha analysis
+            - Health and wellness advice
+            - Symptom interpretation
+            - Treatment recommendations
+            - Lifestyle and dietary guidance
+            
+            Feel free to ask me anything about Ayurveda and health!
             """)
             
             with gr.Row():
-                with gr.Column(scale=2):
-                    # Input section
-                    gr.Markdown("### 📝 Enter Your Symptoms")
-                    symptoms_input = gr.Textbox(
-                        label="Symptoms",
-                        placeholder="Describe your symptoms here...\nExample: I have joint pain, dry skin, and anxiety.",
-                        lines=5,
-                        max_lines=10
-                    )
+                # Left sidebar with settings
+                with gr.Column(scale=1):
+                    gr.Markdown("### ⚙️ Settings")
                     
-                    with gr.Row():
-                        use_rag_checkbox = gr.Checkbox(
-                            label="Use RAG (Knowledge Base)",
+                    with gr.Group(elem_classes="settings-panel"):
+                        use_rag = gr.Checkbox(
+                            label="Use RAG Knowledge",
                             value=True,
-                            info="Enable retrieval-augmented generation for more accurate results"
+                            info="Enable to use saved Ayurvedic knowledge"
                         )
                         
-                        temperature_slider = gr.Slider(
-                            label="Temperature",
-                            minimum=0.0,
+                        temperature = gr.Slider(
+                            minimum=0.1,
                             maximum=1.0,
                             value=0.2,
                             step=0.1,
-                            info="Controls response creativity (0.0 = focused, 1.0 = creative)"
+                            label="Temperature",
+                            info="Higher = more creative, Lower = more focused"
                         )
-                    
-                    analyze_button = gr.Button(
-                        "🩺 Analyze Symptoms",
-                        variant="primary",
-                        size="lg"
-                    )
-                    
-                    clear_button = gr.Button(
-                        "🗑️ Clear",
-                        variant="secondary",
-                        size="lg"
-                    )
+                        
+                        gr.Markdown("### 💡 Example Messages")
+                        
+                        example_buttons = gr.Row()
+                        with example_buttons:
+                            gr.Button("👋 Hello", size="sm").click(
+                                add_example_message,
+                                outputs=[gr.Textbox(label="Message", placeholder="Type your message here..."), gr.Textbox(label="Chat History"), gr.Textbox(label="Status")]
+                            )
+                            
+                        with example_buttons:
+                            gr.Button("😴 Sleep Issues", size="sm").click(
+                                lambda: add_example_message("I'm having trouble sleeping and feel anxious"),
+                                outputs=[gr.Textbox(label="Message", placeholder="Type your message here..."), gr.Textbox(label="Chat History"), gr.Textbox(label="Status")]
+                            )
+                            
+                        with example_buttons:
+                            gr.Button("🌿 Vata Dosha", size="sm").click(
+                                lambda: add_example_message("Tell me about Vata dosha"),
+                                outputs=[gr.Textbox(label="Message", placeholder="Type your message here..."), gr.Textbox(label="Chat History"), gr.Textbox(label="Status")]
+                            )
+                            
+                        with example_buttons:
+                            gr.Button("🍽️ Diet Advice", size="sm").click(
+                                lambda: add_example_message("What should I eat to balance Pitta dosha?"),
+                                outputs=[gr.Textbox(label="Message", placeholder="Type your message here..."), gr.Textbox(label="Chat History"), gr.Textbox(label="Status")]
+                            )
+                        
+                        clear_btn = gr.Button("🗑️ Clear Chat", variant="secondary")
                 
-                with gr.Column(scale=1):
-                    # Example symptoms
-                    gr.Markdown("### 🧪 Example Symptoms")
+                # Main chat area
+                with gr.Column(scale=3):
+                    gr.Markdown("### 💬 Chat Window")
                     
-                    example_vata = gr.Button(
-                        "Vata Imbalance Example",
-                        size="sm",
-                        variant="outline"
+                    # Chat display area
+                    chat_display = gr.HTML(
+                        value="",
+                        label="Chat History",
+                        elem_classes="chat-container"
                     )
                     
-                    example_pitta = gr.Button(
-                        "Pitta Imbalance Example",
-                        size="sm",
-                        variant="outline"
+                    # Message input
+                    message_input = gr.Textbox(
+                        label="Message",
+                        placeholder="Type your message here...",
+                        lines=2
                     )
                     
-                    example_kapha = gr.Button(
-                        "Kapha Imbalance Example",
-                        size="sm",
-                        variant="outline"
+                    # Send button
+                    send_btn = gr.Button("💬 Send Message", variant="primary")
+                    
+                    # Status message
+                    status_msg = gr.Textbox(
+                        label="Status",
+                        value="Ready to chat! 👋",
+                        interactive=False
                     )
-            
-            # Status and output
-            status_output = gr.Textbox(
-                label="Status",
-                value="Ready for analysis",
-                interactive=False
-            )
-            
-            html_output = gr.HTML(
-                label="Diagnosis Results",
-                value=""
-            )
-            
-            # Example symptoms
-            vata_example = "I have joint pain that worsens in cold weather, cracking sounds in my knees, constipation, and anxiety. I have trouble sleeping and my skin is very dry."
-            pitta_example = "I frequently get heartburn and acid reflux, especially after eating spicy foods. I have a reddish complexion, feel hot often, and get irritated easily."
-            kapha_example = "I feel very tired and sluggish, have gained weight, and feel congested. I sleep too much and have slow digestion."
             
             # Event handlers
-            analyze_button.click(
-                fn=analyze_symptoms,
-                inputs=[symptoms_input, use_rag_checkbox, temperature_slider],
-                outputs=[status_output, html_output]
+            send_btn.click(
+                chat_with_assistant,
+                inputs=[message_input, use_rag, temperature],
+                outputs=[chat_display, status_msg]
+            ).then(
+                lambda: "",
+                outputs=[message_input]
             )
             
-            clear_button.click(
-                fn=lambda: ("", "Ready for analysis", ""),
-                outputs=[symptoms_input, status_output, html_output]
+            message_input.submit(
+                chat_with_assistant,
+                inputs=[message_input, use_rag, temperature],
+                outputs=[chat_display, status_msg]
+            ).then(
+                lambda: "",
+                outputs=[message_input]
             )
             
-            example_vata.click(
-                fn=lambda: vata_example,
-                outputs=[symptoms_input]
+            clear_btn.click(
+                clear_chat,
+                outputs=[chat_display, status_msg]
             )
-            
-            example_pitta.click(
-                fn=lambda: pitta_example,
-                outputs=[symptoms_input]
-            )
-            
-            example_kapha.click(
-                fn=lambda: kapha_example,
-                outputs=[symptoms_input]
-            )
-            
-            # Footer
-            gr.HTML("""
-            <div style="text-align: center; margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-                <p><strong>⚠️ Important Disclaimer:</strong></p>
-                <p>This tool is for educational and informational purposes only. It should not replace professional medical advice. Always consult with qualified Ayurvedic practitioners for proper diagnosis and treatment.</p>
-            </div>
-            """)
         
         self.interface = interface
         return interface
@@ -241,155 +250,201 @@ class GradioDiagnosticUI:
         if self.interface is None:
             self.create_interface()
         
-        return self.interface.launch(**kwargs)
+        self.interface.launch(**kwargs)
 
 
-class GradioBatchUI:
-    """Gradio UI for batch analysis."""
+class GradioDiagnosticUI:
+    """Legacy diagnostic interface (kept for backward compatibility)."""
     
-    def __init__(self, diagnostic_callback: Callable[[list], list]):
-        """
-        Initialize the Gradio batch UI.
-        
-        Args:
-            diagnostic_callback: Function that takes list of symptoms and returns list of diagnoses
-        """
+    def __init__(self, diagnostic_callback: Callable[[str, bool, float], Dict[str, Any]]):
         self.diagnostic_callback = diagnostic_callback
         self.display = DiagnosisDisplay()
         self.interface = None
     
     def create_interface(self) -> gr.Interface:
-        """Create the Gradio batch interface."""
+        """Create the Gradio interface."""
         
-        def process_batch(symptoms_list: str) -> Tuple[str, str]:
-            """
-            Process batch of symptoms.
+        def analyze_symptoms(symptoms: str, use_rag: bool, temperature: float) -> Tuple[str, str]:
+            """Analyze symptoms and return results."""
+            if not symptoms.strip():
+                return "", "Please enter symptoms to analyze."
             
-            Args:
-                symptoms_list: Newline-separated list of symptoms
-                
-            Returns:
-                Tuple of (status_message, html_output)
-            """
             try:
-                if not symptoms_list.strip():
-                    return "❌ Please enter symptoms for batch analysis.", ""
+                result = self.diagnostic_callback(symptoms, use_rag, temperature)
                 
-                # Parse symptoms list
-                symptoms = [s.strip() for s in symptoms_list.split('\n') if s.strip()]
+                if "error" in result:
+                    return "", f"❌ Error: {result['error']}"
                 
-                if not symptoms:
-                    return "❌ No valid symptoms found.", ""
+                # Generate HTML display
+                html_output = self.display.display_diagnosis(result)
                 
-                # Process batch
-                results = self.diagnostic_callback(symptoms)
-                
-                # Generate HTML output
-                html_parts = []
-                for i, result in enumerate(results, 1):
-                    html_parts.append(f"<h3>Result {i}</h3>")
-                    
-                    if "error" in result:
-                        html_parts.append(f'<div style="color: red;">❌ Error: {result["error"]}</div>')
-                    else:
-                        simple_output = self.display.display_simple(result)
-                        html_parts.append(simple_output.data)
-                    
-                    html_parts.append("<hr>")
-                
-                html_output = "".join(html_parts)
-                status_msg = f"✅ Processed {len(symptoms)} symptom sets"
-                
-                return status_msg, html_output
+                status = f"✅ Analysis completed successfully"
+                return html_output, status
                 
             except Exception as e:
-                logger.error(f"Error in batch analysis: {e}")
-                error_html = f"""
-                <div style="background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; padding: 15px; margin: 10px 0; color: #721c24;">
-                    <strong>⚠️ Error:</strong> {str(e)}
-                </div>
-                """
-                return f"❌ Batch processing failed: {str(e)}", error_html
+                logger.error(f"Error in analysis: {e}")
+                return "", f"❌ Error: {str(e)}"
         
         # Create the interface
-        with gr.Blocks(title="📊 Batch Analysis - Ayurvedic Diagnostic Assistant") as interface:
+        with gr.Blocks(title="Ayurvedic Diagnostic Assistant") as interface:
             
-            gr.HTML("""
-            <div style="text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                <h1>📊 Batch Analysis</h1>
-                <p>Process multiple symptom sets at once</p>
-            </div>
+            gr.Markdown("""
+            # 🩺 Ayurvedic Diagnostic Assistant
+            
+            Enter your symptoms below to receive a comprehensive Ayurvedic analysis.
             """)
             
             with gr.Row():
-                with gr.Column(scale=1):
-                    gr.Markdown("### 📝 Enter Multiple Symptom Sets")
-                    batch_input = gr.Textbox(
-                        label="Symptoms (one per line)",
-                        placeholder="Enter multiple symptom sets, one per line:\n\nSymptom set 1: I have joint pain and anxiety\nSymptom set 2: I have heartburn and skin rashes\n...",
-                        lines=10,
-                        max_lines=20
+                with gr.Column(scale=2):
+                    # Input section
+                    symptoms_input = gr.Textbox(
+                        label="Symptoms",
+                        placeholder="Describe your symptoms in detail...",
+                        lines=5
                     )
                     
-                    process_button = gr.Button(
-                        "📊 Process Batch",
-                        variant="primary",
-                        size="lg"
-                    )
+                    with gr.Row():
+                        use_rag = gr.Checkbox(
+                            label="Use RAG Knowledge",
+                            value=True,
+                            info="Enable to use saved Ayurvedic knowledge"
+                        )
+                        
+                        temperature = gr.Slider(
+                            minimum=0.1,
+                            maximum=1.0,
+                            value=0.2,
+                            step=0.1,
+                            label="Temperature",
+                            info="Higher = more creative, Lower = more focused"
+                        )
                     
-                    clear_button = gr.Button(
-                        "🗑️ Clear",
-                        variant="secondary",
-                        size="lg"
-                    )
+                    analyze_btn = gr.Button("🔍 Analyze Symptoms", variant="primary")
+                    
+                    # Example buttons
+                    gr.Markdown("### 💡 Example Symptoms")
+                    with gr.Row():
+                        gr.Button("Vata Example").click(
+                            lambda: ("I have joint pain that worsens in cold weather, cracking sounds in my knees, constipation, and anxiety. I have trouble sleeping and my skin is very dry.", "", ""),
+                            outputs=[symptoms_input, gr.HTML(label="Results"), gr.Textbox(label="Status")]
+                        )
+                        gr.Button("Pitta Example").click(
+                            lambda: ("I frequently get heartburn and acid reflux, especially after eating spicy foods. I have a reddish complexion, feel hot often, and get irritated easily.", "", ""),
+                            outputs=[symptoms_input, gr.HTML(label="Results"), gr.Textbox(label="Status")]
+                        )
+                        gr.Button("Kapha Example").click(
+                            lambda: ("I feel very tired and sluggish, have gained weight, and feel congested. I sleep too much and have slow digestion.", "", ""),
+                            outputs=[symptoms_input, gr.HTML(label="Results"), gr.Textbox(label="Status")]
+                        )
                 
-                with gr.Column(scale=1):
-                    gr.Markdown("### 📋 Example Batch Input")
-                    example_batch = gr.Textbox(
-                        label="Example",
-                        value="I have joint pain, dry skin, and anxiety.\nI frequently get heartburn and acid reflux.\nI feel very tired and sluggish, have gained weight.",
-                        lines=10,
-                        interactive=False
-                    )
-            
-            # Status and output
-            batch_status = gr.Textbox(
-                label="Status",
-                value="Ready for batch analysis",
-                interactive=False
-            )
-            
-            batch_output = gr.HTML(
-                label="Batch Results",
-                value=""
-            )
+                with gr.Column(scale=2):
+                    # Results section
+                    results_html = gr.HTML(label="Results")
+                    status_msg = gr.Textbox(label="Status", value="Ready to analyze! 🔍", interactive=False)
             
             # Event handlers
-            process_button.click(
-                fn=process_batch,
-                inputs=[batch_input],
-                outputs=[batch_status, batch_output]
+            analyze_btn.click(
+                analyze_symptoms,
+                inputs=[symptoms_input, use_rag, temperature],
+                outputs=[results_html, status_msg]
             )
             
-            clear_button.click(
-                fn=lambda: ("", "Ready for batch analysis", ""),
-                outputs=[batch_input, batch_status, batch_output]
+            symptoms_input.submit(
+                analyze_symptoms,
+                inputs=[symptoms_input, use_rag, temperature],
+                outputs=[results_html, status_msg]
             )
-            
-            # Footer
-            gr.HTML("""
-            <div style="text-align: center; margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-                <p><strong>⚠️ Important Disclaimer:</strong></p>
-                <p>This tool is for educational and informational purposes only. It should not replace professional medical advice. Always consult with qualified Ayurvedic practitioners for proper diagnosis and treatment.</p>
-            </div>
-            """)
         
         self.interface = interface
         return interface
     
     def launch(self, **kwargs):
-        """Launch the Gradio batch interface."""
+        """Launch the Gradio interface."""
         if self.interface is None:
             self.create_interface()
         
-        return self.interface.launch(**kwargs) 
+        self.interface.launch(**kwargs)
+
+
+class GradioBatchUI:
+    """Batch analysis interface."""
+    
+    def __init__(self, diagnostic_callback: Callable[[list], list]):
+        self.diagnostic_callback = diagnostic_callback
+        self.display = DiagnosisDisplay()
+        self.interface = None
+    
+    def create_interface(self) -> gr.Interface:
+        """Create the batch analysis interface."""
+        
+        def process_batch(symptoms_list: str) -> Tuple[str, str]:
+            """Process multiple symptoms."""
+            if not symptoms_list.strip():
+                return "", "Please enter symptoms to analyze."
+            
+            try:
+                # Split symptoms by lines
+                symptoms = [s.strip() for s in symptoms_list.split('\n') if s.strip()]
+                
+                if not symptoms:
+                    return "", "No valid symptoms found."
+                
+                # Process each symptom
+                results = self.diagnostic_callback(symptoms)
+                
+                # Generate HTML output
+                html_output = ""
+                for i, result in enumerate(results, 1):
+                    if "error" in result:
+                        html_output += f"<h3>Symptom Set {i}</h3><p>❌ Error: {result['error']}</p><hr>"
+                    else:
+                        html_output += f"<h3>Symptom Set {i}</h3>"
+                        html_output += self.display.display_simple(result)
+                        html_output += "<hr>"
+                
+                status = f"✅ Processed {len(symptoms)} symptom sets"
+                return html_output, status
+                
+            except Exception as e:
+                logger.error(f"Error in batch processing: {e}")
+                return "", f"❌ Error: {str(e)}"
+        
+        # Create the interface
+        with gr.Blocks(title="Ayurvedic Batch Analysis") as interface:
+            
+            gr.Markdown("""
+            # 📊 Ayurvedic Batch Analysis
+            
+            Enter multiple symptom sets (one per line) for batch analysis.
+            """)
+            
+            with gr.Row():
+                with gr.Column():
+                    symptoms_input = gr.Textbox(
+                        label="Symptoms (one set per line)",
+                        placeholder="Enter symptoms here...\n\nEnter more symptoms here...\n\nEnter more symptoms here...",
+                        lines=10
+                    )
+                    
+                    process_btn = gr.Button("📊 Process Batch", variant="primary")
+                
+                with gr.Column():
+                    results_html = gr.HTML(label="Results")
+                    status_msg = gr.Textbox(label="Status", value="Ready for batch processing! 📊", interactive=False)
+            
+            # Event handlers
+            process_btn.click(
+                process_batch,
+                inputs=[symptoms_input],
+                outputs=[results_html, status_msg]
+            )
+        
+        self.interface = interface
+        return interface
+    
+    def launch(self, **kwargs):
+        """Launch the Gradio interface."""
+        if self.interface is None:
+            self.create_interface()
+        
+        self.interface.launch(**kwargs) 

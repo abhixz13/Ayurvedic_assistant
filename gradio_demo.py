@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Demo script for the Gradio UI of the Ayurvedic Diagnostic Assistant.
+Demo script for the Conversational Ayurvedic Chat Assistant.
 """
 
 import sys
@@ -12,11 +12,11 @@ sys.path.append('src')
 
 from src.utils.helpers import setup_logging, validate_environment
 from src.ai.diagnostic_engine import AyurvedicDiagnosticEngine
-from src.ui.gradio_ui import GradioDiagnosticUI, GradioBatchUI
+from src.ui.gradio_ui import GradioChatUI, GradioDiagnosticUI, GradioBatchUI
 
 def main():
-    """Main demo function for Gradio UI."""
-    print("🩺 Ayurvedic Diagnostic Assistant - Gradio UI Demo")
+    """Main demo function for Conversational Chat UI."""
+    print("🩺 Ayurvedic Chat Assistant - Conversational Demo")
     print("=" * 60)
     
     # Setup logging
@@ -43,9 +43,23 @@ def main():
         print("Please check your Google API key in .env file")
         return
     
-    # Define the diagnostic callback function
+    # Define the chat callback function
+    def chat_callback(message: str, use_rag: bool = True, temperature: float = 0.2):
+        """Callback function for the chat UI."""
+        try:
+            # Use the new chat method
+            response = engine.chat(
+                user_message=message,
+                use_rag=use_rag,
+                temperature=temperature
+            )
+            return response
+        except Exception as e:
+            return f"I apologize, but I encountered an error: {str(e)}"
+    
+    # Define the diagnostic callback function (for legacy interface)
     def diagnostic_callback(symptoms: str, use_rag: bool = True, temperature: float = 0.2):
-        """Callback function for the Gradio UI."""
+        """Callback function for the diagnostic UI."""
         try:
             # Configure engine parameters
             engine.use_rag = use_rag
@@ -69,27 +83,28 @@ def main():
                 results.append({"error": str(e)})
         return results
     
-    print("\n🎯 Starting Gradio UI...")
+    print("\n🎯 Starting Conversational Chat UI...")
     print("📱 The web interface will open in your browser")
     print("🌐 You can access it from any device on your network")
     
-    # Create and launch the Gradio interface
+    # Create and launch the chat interface
     try:
-        # Create the main diagnostic UI
-        gradio_ui = GradioDiagnosticUI(diagnostic_callback)
+        # Create the conversational chat UI
+        chat_ui = GradioChatUI(chat_callback)
         
         # Launch the interface
-        print("\n🚀 Launching Gradio interface...")
+        print("\n🚀 Launching Conversational Chat interface...")
         print("💡 Features available:")
-        print("   - Interactive symptom input")
-        print("   - Real-time analysis with beautiful HTML output")
-        print("   - RAG and temperature controls")
-        print("   - Example symptoms for testing")
-        print("   - Color-coded dosha identification")
-        print("   - Treatment recommendations")
+        print("   - Natural conversation with Dr. Priya")
+        print("   - Human-like responses and greetings")
+        print("   - Scope detection (Ayurveda/health only)")
+        print("   - RAG knowledge integration")
+        print("   - Temperature control for creativity")
+        print("   - Example conversation starters")
+        print("   - Chat history and clear function")
         
         # Launch with specific settings
-        gradio_ui.launch(
+        chat_ui.launch(
             server_name="0.0.0.0",  # Allow external access
             server_port=7860,       # Default Gradio port
             share=False,            # Set to True to create public link
@@ -98,11 +113,45 @@ def main():
         )
         
     except Exception as e:
-        print(f"❌ Error launching Gradio interface: {e}")
+        print(f"❌ Error launching chat interface: {e}")
         print("💡 Make sure you have Gradio installed: pip install gradio")
 
+def launch_diagnostic_ui():
+    """Launch the legacy diagnostic interface."""
+    print("🔍 Launching Legacy Diagnostic Interface...")
+    
+    # Setup and validation (same as main)
+    setup_logging('INFO')
+    validation = validate_environment()
+    if not validation['environment_valid']:
+        print("❌ Environment validation failed")
+        return
+    
+    try:
+        engine = AyurvedicDiagnosticEngine()
+    except Exception as e:
+        print(f"❌ Failed to initialize engine: {e}")
+        return
+    
+    def diagnostic_callback(symptoms: str, use_rag: bool = True, temperature: float = 0.2):
+        try:
+            result = engine.analyze_symptoms(symptoms)
+            return result
+        except Exception as e:
+            return {"error": str(e)}
+    
+    # Create and launch diagnostic UI
+    diagnostic_ui = GradioDiagnosticUI(diagnostic_callback)
+    diagnostic_ui.launch(
+        server_name="0.0.0.0",
+        server_port=7861,  # Different port for diagnostic UI
+        share=False,
+        show_error=True,
+        quiet=False
+    )
+
 def launch_batch_ui():
-    """Launch the batch analysis UI."""
+    """Launch the batch analysis interface."""
     print("📊 Launching Batch Analysis UI...")
     
     # Setup and validation (same as main)
@@ -132,7 +181,7 @@ def launch_batch_ui():
     batch_ui = GradioBatchUI(batch_diagnostic_callback)
     batch_ui.launch(
         server_name="0.0.0.0",
-        server_port=7861,  # Different port for batch UI
+        server_port=7862,  # Different port for batch UI
         share=False,
         show_error=True,
         quiet=False
@@ -141,12 +190,15 @@ def launch_batch_ui():
 if __name__ == "__main__":
     import argparse
     
-    parser = argparse.ArgumentParser(description="Launch Ayurvedic Diagnostic Assistant Gradio UI")
-    parser.add_argument("--batch", action="store_true", help="Launch batch analysis UI instead")
+    parser = argparse.ArgumentParser(description="Launch Ayurvedic Chat Assistant")
+    parser.add_argument("--mode", choices=["chat", "diagnostic", "batch"], default="chat", 
+                       help="Launch mode: chat (default), diagnostic, or batch")
     
     args = parser.parse_args()
     
-    if args.batch:
+    if args.mode == "diagnostic":
+        launch_diagnostic_ui()
+    elif args.mode == "batch":
         launch_batch_ui()
     else:
-        main() 
+        main()  # Default to chat mode 
