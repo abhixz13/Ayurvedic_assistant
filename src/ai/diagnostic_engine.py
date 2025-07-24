@@ -107,7 +107,16 @@ class AyurvedicDiagnosticEngine:
             'medicine', 'herb', 'diet', 'lifestyle', 'wellness', 'healing',
             'joint', 'headache', 'stomach', 'digestion', 'sleep', 'energy',
             'stress', 'anxiety', 'depression', 'skin', 'hair', 'weight',
-            'blood', 'heart', 'lung', 'liver', 'kidney', 'bone', 'muscle'
+            'blood', 'heart', 'lung', 'liver', 'kidney', 'bone', 'muscle',
+            'tired', 'fatigue', 'sluggish', 'weak', 'exhausted', 'dizzy',
+            'nausea', 'vomiting', 'fever', 'cough', 'cold', 'flu', 'infection',
+            'inflammation', 'swelling', 'rash', 'itch', 'burn', 'numb',
+            'tingle', 'cramp', 'spasm', 'stiff', 'sore', 'ache', 'throb',
+            'pulse', 'heartbeat', 'breath', 'breathe', 'chest', 'back',
+            'neck', 'shoulder', 'arm', 'leg', 'foot', 'hand', 'finger',
+            'toe', 'eye', 'ear', 'nose', 'throat', 'mouth', 'tongue',
+            'appetite', 'hunger', 'thirst', 'urine', 'bowel', 'constipation',
+            'diarrhea', 'bloating', 'gas', 'acid', 'reflux', 'ulcer'
         ]
         
         message_lower = message.lower()
