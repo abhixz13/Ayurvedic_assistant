@@ -21,6 +21,9 @@ ipywidgets>=8.0.0
 IPython>=8.0.0
 jupyter>=1.0.0
 
+# Web UI framework
+gradio>=4.0.0
+
 # Vector database and embeddings
 chromadb>=0.4.0
 

@@ -5,9 +5,10 @@ An AI-powered Ayurvedic diagnostic assistant with interactive display and RAG (R
 ## 🌟 Features
 
 - **Interactive Diagnostic Interface**: Beautiful UI with real-time symptom analysis
+- **Gradio Web Interface**: Modern web-based UI accessible from any device
+- **Jupyter Notebook Interface**: Full interactive experience with widgets
 - **RAG System**: Knowledge base integration for accurate Ayurvedic recommendations
 - **Beautiful HTML Display**: Color-coded dosha identification and treatment recommendations
-- **Jupyter Notebook Interface**: Full interactive experience with widgets
 - **Batch Analysis**: Process multiple symptom sets at once
 - **Comprehensive Documentation**: Detailed guides and examples
 
@@ -38,12 +39,21 @@ An AI-powered Ayurvedic diagnostic assistant with interactive display and RAG (R
    # Edit .env and add your GOOGLE_API_KEY
    ```
 
-4. **Run the interactive demo**:
+4. **Run the Gradio web interface** (Recommended):
    ```bash
-   python interactive_demo.py
+   python gradio_demo.py
    ```
 
 ## 🎯 Usage
+
+### Gradio Web Interface (Recommended)
+```bash
+# Main diagnostic interface
+python gradio_demo.py
+
+# Batch analysis interface
+python gradio_demo.py --batch
+```
 
 ### Interactive Demo
 ```bash
@@ -86,6 +96,30 @@ python example_usage.py
 - **Progress indicators**: Visual feedback during analysis
 - **Error handling**: Clear error messages
 
+## 🌐 Gradio Web Interface
+
+The Gradio interface provides a modern web-based UI that can be accessed from any device:
+
+### Features:
+- **Web-based**: Access from any browser
+- **Network accessible**: Share with others on your network
+- **Mobile friendly**: Works on phones and tablets
+- **Real-time analysis**: Instant results with beautiful formatting
+- **Example buttons**: Quick test with sample symptoms
+- **Batch processing**: Process multiple symptoms at once
+
+### Launch Options:
+```bash
+# Main interface (port 7860)
+python gradio_demo.py
+
+# Batch interface (port 7861)
+python gradio_demo.py --batch
+
+# With public sharing (creates public URL)
+# Modify gradio_demo.py to set share=True
+```
+
 ## 🧪 Example Symptoms
 
 ### Vata Imbalance
@@ -123,7 +157,8 @@ Ayurvedic_Diagnostic_Assistant/
 │   │   └── vector_store.py
 │   ├── ui/                    # User interface
 │   │   ├── display.py
-│   │   └── widgets.py
+│   │   ├── widgets.py         # Jupyter widgets
+│   │   └── gradio_ui.py      # Gradio web interface
 │   └── utils/                 # Utilities
 │       └── helpers.py
 ├── notebooks/                 # Jupyter notebooks
@@ -132,6 +167,7 @@ Ayurvedic_Diagnostic_Assistant/
 ├── data/                      # Data files
 ├── requirements.txt           # Dependencies
 ├── setup.py                  # Setup script
+├── gradio_demo.py            # Gradio web interface demo
 └── README.md                 # This file
 ```
 
@@ -162,6 +198,7 @@ python -m pytest tests/
 - **[Display Guide](DISPLAY_GUIDE.md)**: Comprehensive guide for using the display system
 - **[Example Usage](example_usage.py)**: Basic usage examples
 - **[Interactive Demo](interactive_demo.py)**: Interactive command-line interface
+- **[Gradio Demo](gradio_demo.py)**: Web-based interface
 - **[Jupyter Notebook](notebooks/main_assistant.ipynb)**: Full interactive experience
 
 ## 🤝 Contributing
@@ -194,6 +231,7 @@ If you encounter any issues:
 - Built with Google Gemini AI
 - Uses sentence-transformers for embeddings
 - Interactive widgets powered by ipywidgets
+- Web interface powered by Gradio
 - Beautiful display system with custom CSS
 
 ---
