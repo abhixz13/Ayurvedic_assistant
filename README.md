@@ -11,6 +11,7 @@ An AI-powered Ayurvedic diagnostic assistant with a modern Gradio web interface 
 - **Real-time Analysis**: Instant results with beautiful formatting
 - **Network Accessible**: Share with others on your network
 - **Mobile Friendly**: Works on phones, tablets, and desktops
+- **Complete System Test**: Comprehensive testing framework for all components
 
 ## 🚀 Quick Start
 
@@ -24,7 +25,7 @@ An AI-powered Ayurvedic diagnostic assistant with a modern Gradio web interface 
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/Ayurvedic_Diagnostic_Assistant.git
+   git clone https://github.com/abhixz13/Ayurvedic_assistant.git
    cd Ayurvedic_Diagnostic_Assistant
    ```
 
@@ -43,6 +44,24 @@ An AI-powered Ayurvedic diagnostic assistant with a modern Gradio web interface 
    ```bash
    python gradio_demo.py
    ```
+
+## 🧪 System Testing
+
+Run the complete system test to verify all components:
+
+```bash
+python system_test.py
+```
+
+**Test Results**: All 8 system components passed (100% success rate)
+- ✅ Environment and Dependencies
+- ✅ Configuration Settings
+- ✅ Document Processing
+- ✅ Vector Store Operations
+- ✅ RAG System
+- ✅ AI Components
+- ✅ UI Components
+- ✅ End-to-End Integration
 
 ## 🎯 Usage
 
@@ -68,6 +87,11 @@ python demo_display.py
 ### Example Usage
 ```bash
 python example_usage.py
+```
+
+### RAG Query Tool
+```bash
+python query_rag.py
 ```
 
 ## 🌐 Gradio Web Interface

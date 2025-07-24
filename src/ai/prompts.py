@@ -5,6 +5,9 @@ Prompt management for Ayurvedic diagnostic assistant.
 import logging
 from typing import Dict, Any, List
 from src.config.settings import settings
+from pathlib import Path
+from src.rag.embedding_manager import EmbeddingManager
+from src.rag.vector_store import VectorStore
 
 logger = logging.getLogger(__name__)
 
