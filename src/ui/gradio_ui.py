@@ -36,6 +36,7 @@ class GradioChatUI:
             border-radius: 10px;
             padding: 20px;
             background: #f9f9f9;
+            margin-bottom: 20px;
         }
         .user-message {
             background: #007bff;
@@ -61,6 +62,7 @@ class GradioChatUI:
             padding: 20px;
             border-radius: 10px;
             border: 1px solid #dee2e6;
+            margin-bottom: 20px;
         }
         .example-button {
             margin: 5px;
@@ -70,9 +72,19 @@ class GradioChatUI:
             background: #007bff;
             color: white;
             cursor: pointer;
+            width: 100%;
+            margin-bottom: 10px;
         }
         .example-button:hover {
             background: #0056b3;
+        }
+        .main-header {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
         }
         """
         
@@ -120,24 +132,19 @@ class GradioChatUI:
             self.conversation_history = []
             return "", "🗑️ Chat history cleared"
         
-        def add_example_message(example: str) -> Tuple[str, str, str]:
-            """Add an example message to the chat."""
-            return example, "", "📝 Example message added"
+        def add_example_message(example: str) -> str:
+            """Add an example message to the input."""
+            return example
         
         # Create the interface layout
         with gr.Blocks(css=css, title="Ayurvedic Chat Assistant") as interface:
             
-            gr.Markdown("""
-            # 🩺 Ayurvedic Chat Assistant
-            
-            Welcome! I'm Dr. Priya, your Ayurvedic health assistant. I can help you with:
-            - Ayurvedic principles and dosha analysis
-            - Health and wellness advice
-            - Symptom interpretation
-            - Treatment recommendations
-            - Lifestyle and dietary guidance
-            
-            Feel free to ask me anything about Ayurveda and health!
+            # Header
+            gr.HTML("""
+            <div class="main-header">
+                <h1>🩺 Ayurvedic Chat Assistant</h1>
+                <p>Welcome! I'm Dr. Priya, your Ayurvedic health assistant. Feel free to ask me anything about Ayurveda and health!</p>
+            </div>
             """)
             
             with gr.Row():
@@ -161,34 +168,40 @@ class GradioChatUI:
                             info="Higher = more creative, Lower = more focused"
                         )
                         
-                        gr.Markdown("### 💡 Example Messages")
+                        clear_btn = gr.Button("🗑️ Clear Chat", variant="secondary", size="sm")
+                    
+                    gr.Markdown("### 💡 Example Messages")
+                    
+                    with gr.Group(elem_classes="settings-panel"):
+                        gr.Button("👋 Hello", size="sm", elem_classes="example-button").click(
+                            lambda: "Hi, how are you?",
+                            outputs=[gr.Textbox(label="Message", placeholder="Type your message here...")]
+                        )
                         
-                        example_buttons = gr.Row()
-                        with example_buttons:
-                            gr.Button("👋 Hello", size="sm").click(
-                                add_example_message,
-                                outputs=[gr.Textbox(label="Message", placeholder="Type your message here..."), gr.Textbox(label="Chat History"), gr.Textbox(label="Status")]
-                            )
-                            
-                        with example_buttons:
-                            gr.Button("😴 Sleep Issues", size="sm").click(
-                                lambda: add_example_message("I'm having trouble sleeping and feel anxious"),
-                                outputs=[gr.Textbox(label="Message", placeholder="Type your message here..."), gr.Textbox(label="Chat History"), gr.Textbox(label="Status")]
-                            )
-                            
-                        with example_buttons:
-                            gr.Button("🌿 Vata Dosha", size="sm").click(
-                                lambda: add_example_message("Tell me about Vata dosha"),
-                                outputs=[gr.Textbox(label="Message", placeholder="Type your message here..."), gr.Textbox(label="Chat History"), gr.Textbox(label="Status")]
-                            )
-                            
-                        with example_buttons:
-                            gr.Button("🍽️ Diet Advice", size="sm").click(
-                                lambda: add_example_message("What should I eat to balance Pitta dosha?"),
-                                outputs=[gr.Textbox(label="Message", placeholder="Type your message here..."), gr.Textbox(label="Chat History"), gr.Textbox(label="Status")]
-                            )
+                        gr.Button("😴 Sleep Issues", size="sm", elem_classes="example-button").click(
+                            lambda: "I'm having trouble sleeping and feel anxious",
+                            outputs=[gr.Textbox(label="Message", placeholder="Type your message here...")]
+                        )
                         
-                        clear_btn = gr.Button("🗑️ Clear Chat", variant="secondary")
+                        gr.Button("🌿 Vata Dosha", size="sm", elem_classes="example-button").click(
+                            lambda: "Tell me about Vata dosha",
+                            outputs=[gr.Textbox(label="Message", placeholder="Type your message here...")]
+                        )
+                        
+                        gr.Button("🍽️ Diet Advice", size="sm", elem_classes="example-button").click(
+                            lambda: "What should I eat to balance Pitta dosha?",
+                            outputs=[gr.Textbox(label="Message", placeholder="Type your message here...")]
+                        )
+                        
+                        gr.Button("🤒 Joint Pain", size="sm", elem_classes="example-button").click(
+                            lambda: "I have joint pain that worsens in cold weather",
+                            outputs=[gr.Textbox(label="Message", placeholder="Type your message here...")]
+                        )
+                        
+                        gr.Button("🔥 Heartburn", size="sm", elem_classes="example-button").click(
+                            lambda: "I frequently get heartburn after eating spicy foods",
+                            outputs=[gr.Textbox(label="Message", placeholder="Type your message here...")]
+                        )
                 
                 # Main chat area
                 with gr.Column(scale=3):
@@ -241,6 +254,14 @@ class GradioChatUI:
                 clear_chat,
                 outputs=[chat_display, status_msg]
             )
+            
+            # Footer disclaimer
+            gr.HTML("""
+            <div style="text-align: center; margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                <p><strong>⚠️ Important Disclaimer:</strong></p>
+                <p>This tool is for educational and informational purposes only. It should not replace professional medical advice. Always consult with qualified Ayurvedic practitioners for proper diagnosis and treatment.</p>
+            </div>
+            """)
         
         self.interface = interface
         return interface
