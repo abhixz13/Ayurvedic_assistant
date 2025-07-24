@@ -1,0 +1,53 @@
+Project Structure
+
+�� Core Directories
+src/ - Main source code with modular architecture
+data/ - For storing Ayurvedic documents and processed data
+notebooks/ - Jupyter notebooks for interactive usage
+tests/ - Comprehensive test suite
+
+🔧 Key Components Implemented
+1. Configuration (src/config/)
+settings.py - Centralized configuration management
+Environment variable handling
+Model and RAG parameter configuration
+
+2. Data Processing (src/data_processing/)
+document_loader.py - PDF, DOCX, TXT document loading
+text_chunker.py - Intelligent text chunking for RAG
+
+3. RAG System (src/rag/)
+embeddings.py - Sentence transformer embeddings
+vector_store.py - FAISS vector database management
+retriever.py - Semantic search and retrieval
+
+4. AI Components (src/ai/)
+gemini_client.py - Google Gemini API integration
+prompts.py - Few-shot examples and prompt management
+diagnostic_engine.py - Main diagnostic orchestration
+
+5. User Interface (src/ui/)
+display.py - Beautiful HTML diagnosis display
+widgets.py - Interactive ipywidgets interface
+
+6. Utilities (src/utils/)
+helpers.py - System utilities and validation
+
+📋 Setup Files
+requirements.txt - All necessary dependencies
+setup.py - Automated installation script
+env.example - Environment variables template
+README.md - Comprehensive documentation
+
+🧪 Testing
+tests/test_diagnostic_engine.py - Core functionality tests
+tests/test_rag.py - RAG component tests
+
+📚 Usage Examples
+notebooks/main_assistant.ipynb - Interactive Jupyter notebook
+example_usage.py - Programmatic usage example
+
+Steps to execute it
+
+1. Install the environment files and libraries
+2. 

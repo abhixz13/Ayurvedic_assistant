@@ -1,0 +1,30 @@
+# Core AI and ML libraries
+google-generativeai>=0.3.0
+langchain>=0.3.0
+langchain-community>=0.0.10
+langchain-google-genai>=0.1.0
+sentence-transformers>=2.2.0
+faiss-cpu>=1.7.0
+
+# Document processing
+PyPDF2>=3.0.0
+python-docx>=0.8.11
+pypdf>=3.0.0
+
+# Data processing and utilities
+pandas>=2.0.0
+numpy>=1.24.0
+requests>=2.31.0
+
+# Jupyter and interactive components
+ipywidgets>=8.0.0
+IPython>=8.0.0
+jupyter>=1.0.0
+
+# Vector database and embeddings
+chromadb>=0.4.0
+
+# Utilities
+python-dotenv>=1.0.0
+tqdm>=4.65.0 
+pytest>=7.0.0
